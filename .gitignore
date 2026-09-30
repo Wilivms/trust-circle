@@ -1,0 +1,5 @@
+target/
+demo/node_modules/
+demo/config.json
+.DS_Store
+contracts/*/test_snapshots/

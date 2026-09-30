@@ -1,0 +1,131 @@
+/* Palette : ciel nocturne (bleu nuit → crépuscule violet), étoiles blanches, libellés cyan. */
+:root {
+  --night: #0a1838;
+  --night-2: #13295c;
+  --dusk: #2c3a86;
+  --horizon: #5b4a9e;
+  --ink: #edf3ff;
+  --cyan: #9fdcf5;
+  --muted: #8ea5cc;
+  --card: rgba(255, 255, 255, 0.045);
+  --card-hi: rgba(159, 220, 245, 0.08);
+  --line: rgba(159, 220, 245, 0.16);
+  --danger: #f3a6b8;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font-family: 'Lato', system-ui, sans-serif;
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--night) 0%, var(--night-2) 45%, var(--dusk) 85%, var(--horizon) 100%);
+  background-color: var(--night);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Quelques étoiles discrètes */
+.sky {
+  position: fixed; inset: 0; pointer-events: none; opacity: .55;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 28% 72%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 44% 9%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 63% 38%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 78% 14%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 88% 58%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 6% 52%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 55% 88%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 95% 30%, #fff 50%, transparent 51%);
+}
+
+main { position: relative; max-width: 1080px; margin: 0 auto; padding: 56px 20px 40px; }
+
+header { margin-bottom: 36px; }
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
+.topbar .eyebrow { margin: 0; }
+button.small { padding: 7px 14px; font-size: 13px; }
+button.connected { border-color: var(--line); color: var(--ink); }
+.card .addr { font-size: 12px; color: var(--muted); font-family: ui-monospace, monospace; margin: 4px 0 0; }
+.tag.wallet { background: transparent; color: var(--cyan); border: 1px solid var(--cyan); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.eyebrow { color: var(--cyan); letter-spacing: .14em; text-transform: uppercase; font-size: 12px; margin: 0 0 10px; }
+h1 { font-weight: 300; font-size: clamp(34px, 5vw, 52px); margin: 0 0 12px; letter-spacing: -.01em; }
+.lede { color: var(--muted); max-width: 620px; line-height: 1.6; margin: 0; font-size: 16px; }
+
+.label { color: var(--muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 6px; }
+.big { font-size: 22px; margin: 0; font-weight: 400; }
+.muted { color: var(--muted); }
+
+/* Bandeau du mois */
+.round {
+  display: grid; grid-template-columns: auto 1fr 1.4fr auto; gap: 32px; align-items: end;
+  padding: 24px 26px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card);
+  margin-bottom: 20px;
+}
+#beneficiary { color: var(--cyan); white-space: nowrap; }
+.bar { height: 4px; background: rgba(255,255,255,.08); border-radius: 4px; margin-top: 10px; overflow: hidden; }
+.fill { height: 100%; width: 0; background: var(--cyan); box-shadow: 0 0 12px var(--cyan); transition: width .6s ease; }
+.actions { display: flex; gap: 10px; }
+
+button {
+  font: inherit; font-size: 14px; cursor: pointer; border-radius: 999px; padding: 10px 18px;
+  border: 1px solid var(--cyan); background: var(--cyan); color: var(--night); font-weight: 700;
+  transition: opacity .2s, background .2s;
+}
+button.ghost { background: transparent; color: var(--cyan); font-weight: 400; }
+button:hover:not(:disabled) { opacity: .85; }
+button:disabled { opacity: .35; cursor: default; }
+
+/* Cartes des membres */
+.members { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+.card {
+  position: relative; padding: 20px 18px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--card); display: flex; flex-direction: column; gap: 14px; min-height: 250px;
+}
+.card.beneficiary { background: var(--card-hi); border-color: rgba(159,220,245,.45); }
+.card .star {
+  position: absolute; top: 18px; right: 18px; width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,.18);
+}
+.card.paid .star { background: #fff; box-shadow: 0 0 10px 2px var(--cyan); }
+.card h3 { margin: 0; font-weight: 400; font-size: 20px; }
+.card .where { color: var(--muted); font-size: 13px; margin: 2px 0 0; }
+.card .code { color: var(--cyan); font-size: 13px; letter-spacing: .06em; }
+.card dl { margin: 0; display: grid; gap: 8px; font-size: 13px; }
+.card dt { color: var(--muted); }
+.card dd { margin: 0; font-size: 15px; }
+.card .status { font-size: 13px; color: var(--muted); }
+.card.paid .status { color: var(--cyan); }
+.card button { margin-top: auto; width: 100%; }
+.tag { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--night); background: var(--cyan);
+  border-radius: 999px; padding: 2px 8px; align-self: flex-start; font-weight: 700; }
+
+/* Journal */
+.log h2 { font-weight: 400; font-size: 16px; color: var(--muted); margin: 0 0 12px; }
+.log ol { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.log li { padding: 11px 2px; border-bottom: 1px solid var(--line); font-size: 14px; display: flex; gap: 12px; justify-content: space-between; }
+.log li.error { color: var(--danger); }
+.log a { color: var(--cyan); text-decoration: none; font-size: 12px; white-space: nowrap; }
+.log a:hover { text-decoration: underline; }
+
+footer { margin-top: 36px; font-size: 13px; color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; }
+footer .reset { margin-left: auto; }
+footer { align-items: center; }
+footer a { color: var(--cyan); text-decoration: none; word-break: break-all; }
+
+.spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid currentColor; border-right-color: transparent;
+  border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 960px) {
+  .members { grid-template-columns: repeat(2, 1fr); }
+  .round { grid-template-columns: 1fr 1fr; }
+  .actions { grid-column: 1 / -1; }
+}
+@media (max-width: 560px) {
+  .members { grid-template-columns: 1fr; }
+  .round { grid-template-columns: 1fr; }
+  .actions { flex-direction: column; }
+}
