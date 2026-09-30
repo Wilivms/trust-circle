@@ -1,4 +1,4 @@
-//! Tontine Monde — tontine familiale multi-devises sur Stellar.
+//! Trust Circle — tontine familiale multi-devises sur Stellar.
 //!
 //! Le contrat ne manipule qu'un seul actif : l'USDC (via son Stellar Asset
 //! Contract), qui sert d'unité de compte. Chaque membre verse `amount` USDC
@@ -14,7 +14,7 @@ use soroban_sdk::{
     contract, contracterror, contractevent, contractimpl, contracttype, token, Address, Env, Vec,
 };
 
-/// ~30 jours de ledgers (5 s par ledger) : on garde l'état vivant pendant la tontine.
+/// ~30 jours de ledgers (5 s par ledger) : on garde l'état vivant pendant la durée du cercle.
 const TTL_THRESHOLD: u32 = 17_280 * 7;
 const TTL_EXTEND_TO: u32 = 17_280 * 30;
 
@@ -38,7 +38,7 @@ pub enum Error {
     Finished = 4,
 }
 
-/// Vue complète de la tontine, pour le front.
+/// Vue complète du cercle, pour le front.
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct State {
@@ -72,10 +72,10 @@ pub struct PaidOut {
 }
 
 #[contract]
-pub struct Tontine;
+pub struct TrustCircle;
 
 #[contractimpl]
-impl Tontine {
+impl TrustCircle {
     /// Appelé une seule fois au déploiement.
     pub fn __constructor(env: Env, token: Address, members: Vec<Address>, amount: i128) {
         if members.is_empty() {

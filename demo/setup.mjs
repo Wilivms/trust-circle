@@ -1,7 +1,7 @@
 // Prépare tout le décor sur le testnet Stellar.
 //
 //   node setup.mjs          → comptes + stablecoins + marché des changes + contrat
-//   node setup.mjs --reset  → garde les comptes, redéploie une tontine neuve
+//   node setup.mjs --reset  → garde les comptes, redéploie un cercle neuf
 //
 // Les secrets de testnet sont écrits dans demo/config.json (ignoré par git).
 import { execFileSync } from 'node:child_process';
@@ -108,13 +108,13 @@ async function createWorld() {
   return cfg;
 }
 
-function deployTontine(cfg) {
-  const wasm = path.join(ROOT, 'target/wasm32v1-none/release/tontine.wasm');
+function deployCircle(cfg) {
+  const wasm = path.join(ROOT, 'target/wasm32v1-none/release/trust_circle.wasm');
   if (!fs.existsSync(wasm)) {
     log('Compilation du contrat…');
     execFileSync('stellar', ['contract', 'build'], { cwd: ROOT, stdio: 'inherit' });
   }
-  log('Déploiement de la tontine…');
+  log('Déploiement du contrat Trust Circle…');
   const stroops = String(Math.round(Number(CONTRIBUTION) * 1e7));
   const out = stellar([
     'contract', 'deploy', '--wasm', wasm, '--source-account', cfg.admin.secret, '--network', 'testnet',
@@ -132,12 +132,12 @@ if (cfg && cfg.members?.[WALLET_INDEX]?.public !== WALLET) {
   cfg = null;
 }
 if (cfg?.contractId && !RESET) {
-  log(`Déjà prêt (${CONFIG_PATH}). Utilisez --reset pour repartir d'une tontine neuve.`);
+  log(`Déjà prêt (${CONFIG_PATH}). Utilisez --reset pour repartir d'un cercle neuf.`);
   process.exit(0);
 }
 if (!cfg?.usdcContract) cfg = await createWorld();
-deployTontine(cfg);
+deployCircle(cfg);
 
-console.log(`\n✓ Tontine déployée : ${cfg.contractId}`);
+console.log(`\n✓ Trust Circle déployé : ${cfg.contractId}`);
 console.log(`  https://stellar.expert/explorer/testnet/contract/${cfg.contractId}`);
 console.log('  Lancez la démo : npm start  →  http://localhost:3000\n');

@@ -101,7 +101,7 @@ function render() {
   $('round-n').textContent = s.finished ? s.totalRounds : s.round + 1;
   $('round-total').textContent = s.totalRounds;
   const b = s.beneficiary != null ? s.members[s.beneficiary] : null;
-  $('beneficiary').textContent = s.finished ? 'Tontine terminée' : `${b.name} · ${b.city}`;
+  $('beneficiary').textContent = s.finished ? 'Cercle terminé' : `${b.name} · ${b.city}`;
   $('pot').textContent = fmt(s.pot);
   $('pot-target').textContent = fmt(s.potTarget);
   $('pot-fill').style.width = `${(s.pot / s.potTarget) * 100}%`;

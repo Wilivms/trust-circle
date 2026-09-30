@@ -1,69 +1,84 @@
-# Tontine Monde
+# Trust Circle
 
-Tontine familiale multi-devises sur Stellar. Six frères et sœurs : **vous**, dans un pays imaginaire, qui cotisez en **XLM** avec votre wallet Freighter, et cinq membres sur cinq continents, chacun avec un stablecoin qui existe vraiment sur Stellar :
+A cross-border family savings circle (a *tontine*) built on Stellar.
 
-| Membre | Ville | Continent | Monnaie |
+Six siblings live in six countries and use six currencies. Every month, each of them contributes **the same value (100 USDC)** in their own currency, and a different member receives the whole pot (600 USDC), converted back into their own currency. Currency conversion happens at market rate, on-chain, at the moment of payment, so the circle stays fair no matter where each member lives.
+
+| Member | City | Region | Currency |
 |---|---|---|---|
-| **Vous** (Freighter) | Nova Lumen, Stellaria | Pays imaginaire | XLM (natif) |
+| **You** (Freighter wallet) | Nova Lumen, Stellaria | Imaginary country | XLM (native) |
 | Léa | Paris | Europe | EURC (Circle) |
-| Hugo | Tokyo | Asie | GYEN (GMO Trust) |
-| Inès | Sydney | Océanie | AUDD (Novatti) |
-| Noah | Lagos | Afrique | NGNC (Link) |
-| Emma | Buenos Aires | Amérique du Sud | ARST (Anclap) |
+| Hugo | Tokyo | Asia | GYEN (GMO Trust) |
+| Inès | Sydney | Oceania | AUDD (Novatti) |
+| Noah | Lagos | Africa | NGNC (Link) |
+| Emma | Buenos Aires | South America | ARST (Anclap) |
 
-Chaque mois, chacun verse **l'équivalent de 100 USDC** dans sa monnaie ; un membre différent reçoit les 600 USDC, reconvertis dans sa devise. Vous êtes premier dans la rotation : vous recevez la cagnotte dès le mois 1.
+All five stablecoins exist on Stellar mainnet. The demo runs on testnet with look-alike demo assets.
 
-## Comment ça marche
+## How it works
 
 ```
-XLM  ─┐                                     ┌─► XLM (bénéficiaire du mois)
-EURC ─┤  path payment        contrat        │   path payment
-GYEN ─┤
-AUDD ─┼─ strict receive ─► Soroban (USDC) ──┘   strict send
-NGNC ─┤  (exactement 100 USDC)
+XLM  ─┐                                          ┌─► XLM (this month's recipient)
+EURC ─┤   path payment         Soroban           │   path payment
+GYEN ─┤                        contract          │
+AUDD ─┼─  strict receive  ─►   (holds USDC)  ────┘   strict send
+NGNC ─┤   (exactly 100 USDC)
 ARST ─┘
 ```
 
-- **Contrat Soroban** (`contracts/tontine`) : ne manipule que de l'USDC. Il vérifie les membres, empêche les doubles paiements, attend que tout le monde ait payé, puis verse la cagnotte au bénéficiaire du tour (rotation).
-- **Path payments** (natifs Stellar) : conversion au taux du marché au moment du paiement. `strict receive` garantit que chacun verse **exactement** 100 USDC, quelle que soit sa devise.
-- **Testnet** : `setup.mjs` émet des versions de démo de l'USDC et des 5 stablecoins, et ouvre un petit marché des changes sur le DEX, XLM/USDC compris (taux fixés dans `demo/lib.mjs`, marge de 0,3 % ; 1 USD = 3,5 XLM pour la démo).
-- **Freighter** : pour votre carte, le serveur prépare la transaction, Freighter la signe dans le navigateur, le serveur l'envoie. Aucune clé de votre wallet ne quitte Freighter.
+- **Soroban smart contract** (`contracts/trust-circle`): only deals with USDC. It checks membership, rejects double payments, waits until every member has paid, then sends the pot to the current recipient and moves to the next round (round-robin).
+- **Path payments** (native to Stellar): each member converts their local currency into *exactly* 100 USDC with a `strict receive` path payment, so everyone contributes the same value. The recipient converts the pot back with a `strict send` path payment.
+- **Freighter**: your card is signed in the browser. The server builds the transaction, Freighter signs it, the server submits it. Your keys never leave Freighter.
+- **Simulated members**: the other five members are testnet accounts created by the setup script. The demo server signs for them so the demo runs in one click.
 
-## Lancer la démo
+## Running the demo
 
-Prérequis : l'environnement du workshop (Rust + `wasm32v1-none` + `stellar` CLI), Node 18+, et l'extension Freighter réglée sur **Testnet** avec le compte `GB2W…D4OV` (un peu de XLM de faucet suffit). Autre wallet : `WALLET=G... npm run setup`.
+Requirements: Rust with the `wasm32v1-none` target, the `stellar` CLI, Node 18+, and the Freighter extension set to **Testnet**.
 
 ```bash
-cd tontine-monde
-cargo test                 # 5 tests du contrat
-stellar contract build     # compile le .wasm
+cargo test                 # 5 contract tests
+stellar contract build     # builds target/wasm32v1-none/release/trust_circle.wasm
 
 cd demo
 npm install
-npm run setup              # ~2 min : comptes, stablecoins, marché, déploiement
+npm run setup              # ~2 min: accounts, demo stablecoins, FX market, contract deployment
 npm start                  # → http://localhost:3000
 ```
 
-Pour rejouer la démo depuis le mois 1 (mêmes comptes, nouvelle tontine) : `npm run reset`.
+The wallet used as "You" is set in `demo/lib.mjs`. To use another one: `WALLET=G... npm run setup`.
 
-## Scénario de démo (1 minute)
+To replay the demo from month 1 (same accounts, fresh contract), click **Recommencer au mois 1** at the bottom of the page, or run `npm run reset`.
 
-0. Avant de passer : **Connecter Freighter** puis **Activer mon wallet** (1 signature : ligne de confiance USDC).
-1. Montrer les 6 cartes : la cotisation affichée est différente dans chaque devise (351 XLM, 86 EURC, 14 844 GYEN…), mais vaut toujours 100 USDC.
-2. **Les autres cotisent** → 10 transactions dans le journal (conversions + versements), liens vers l'explorateur.
-3. Sur votre carte, **Cotiser en XLM** → Freighter s'ouvre deux fois : conversion XLM → USDC, puis versement au contrat.
-4. **Verser la cagnotte** → le contrat vous verse 600 USDC, Freighter s'ouvre pour les reconvertir en XLM.
+### What `npm run setup` does on testnet
 
-## Fichiers
+1. Creates and funds (friendbot) an issuer, a market maker, an admin and the five simulated members.
+2. Issues demo versions of USDC, EURC, GYEN, AUDD, NGNC and ARST.
+3. Opens a small FX market on the Stellar DEX (sell offers both ways for each pair, including XLM/USDC), at fixed demo rates with a 0.3% spread. Rates live in `demo/lib.mjs` (e.g. 1 USD = 3.5 XLM).
+4. Deploys the Stellar Asset Contract for USDC, then deploys the Trust Circle contract.
 
-- `contracts/tontine/src/lib.rs` : le contrat
-- `contracts/tontine/src/test.rs` : les tests
-- `demo/setup.mjs` : prépare le testnet (écrit `demo/config.json`, qui contient des clés de **testnet** uniquement)
-- `demo/server.mjs` : petit serveur qui signe pour les 5 membres simulés et prépare les transactions de votre wallet
-- `demo/public/` : le front
+Testnet secret keys are written to `demo/config.json`, which is git-ignored.
 
-## Pour le hackathon
+## Demo script (about 1 minute)
 
-- Dépôt de garantie confisqué en cas de défaut de paiement.
-- Un wallet par membre (Stellar Wallets Kit) au lieu des clés côté serveur.
-- Taux de change réels via un oracle (Reflector) ou via les vrais émetteurs/anchors (SEP-24 pour le retrait en banque).
+0. Before going on stage: **Connecter Freighter**, then **Activer mon wallet** (one signature: USDC trustline), then **Les autres cotisent** so the five other members have already paid.
+1. Point at the cards: every contribution looks different (351 XLM, 86 EURC, 14,844 GYEN…) but each one is worth exactly 100 USDC.
+2. Click **Cotiser en XLM** on your card. Freighter opens twice: XLM → USDC conversion, then the payment into the contract.
+3. Click **Verser la cagnotte**. The contract sends you 600 USDC, and Freighter opens once more to convert them back into XLM.
+
+Every transaction in the log links to the Stellar testnet explorer.
+
+## Project layout
+
+- `contracts/trust-circle/src/lib.rs`: the Soroban contract
+- `contracts/trust-circle/src/test.rs`: contract tests
+- `demo/setup.mjs`: testnet setup
+- `demo/server.mjs`: demo server (signs for simulated members, prepares transactions for your wallet)
+- `demo/lib.mjs`: shared helpers, members and FX rates
+- `demo/public/`: front end
+- `docs/trust_circle_pitch.pptx`: pitch deck
+
+## Next steps
+
+- Collateral deposit, slashed if a member skips a payment.
+- One real wallet per member (Stellar Wallets Kit) instead of server-side keys.
+- Real FX rates from an oracle (Reflector) and the real issuers, plus bank deposits and withdrawals through anchors (SEP-24).

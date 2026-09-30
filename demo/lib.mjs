@@ -81,10 +81,10 @@ export async function submitClassic(signer, ops) {
 }
 
 const CONTRACT_ERRORS = {
-  1: "ce compte n'est pas membre de la tontine",
+  1: "ce compte n'est pas membre du cercle",
   2: 'ce membre a déjà cotisé ce mois-ci',
   3: "tout le monde n'a pas encore cotisé",
-  4: 'la tontine est terminée',
+  4: 'le cercle est terminé',
 };
 function explain(msg) {
   const m = /Error\(Contract, #(\d+)\)/.exec(msg);

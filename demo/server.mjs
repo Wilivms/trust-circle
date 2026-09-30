@@ -17,7 +17,7 @@ import {
 const PORT = Number(process.env.PORT ?? 3000);
 const cfg = loadConfig();
 if (!cfg?.contractId) {
-  console.error('Pas de tontine déployée : lancez d’abord `npm run setup`.');
+  console.error('Pas de cercle déployé : lancez d’abord `npm run setup`.');
   process.exit(1);
 }
 
@@ -73,7 +73,7 @@ async function contribute(i) {
     steps.push({ label: `${f.name} convertit ${conv.spent.toFixed(2)} ${f.code} en ${CONTRIBUTION} USDC`, hash: conv.hash });
   }
   const call = await invoke(cfg, kp(cfg.members[i]), 'contribute', addr(cfg.members[i].public));
-  steps.push({ label: `${f.name} verse ${CONTRIBUTION} USDC dans la tontine`, hash: call.hash });
+  steps.push({ label: `${f.name} verse ${CONTRIBUTION} USDC dans le cercle`, hash: call.hash });
   return steps;
 }
 
@@ -94,16 +94,17 @@ async function payout() {
   const i = indexOf(call.value);
   const f = FAMILY[i];
   const pot = USDC(s.amount) * s.total_rounds;
-  const steps = [{ label: `La tontine verse ${pot} USDC à ${f.name} (${f.city})`, hash: call.hash }];
+  const steps = [{ label: `Trust Circle verse ${pot} USDC à ${f.name} (${f.city})`, hash: call.hash }];
   if (isWallet(i)) return { steps, walletConvert: pot };
   const conv = await convertFromUsdc(cfg, i, pot);
   steps.push({ label: `${f.name} reçoit ${conv.received.toFixed(2)} ${f.code}`, hash: conv.hash });
   return { steps };
 }
 
-/** Redéploie une tontine neuve (mêmes comptes) : la démo repart du mois 1. */
+/** Redéploie un cercle neuf (mêmes comptes) : la démo repart du mois 1. */
 async function reset() {
-  const wasm = path.join(ROOT, 'target/wasm32v1-none/release/tontine.wasm');
+  const wasm = path.join(ROOT, 'target/wasm32v1-none/release/trust_circle.wasm');
+  if (!fs.existsSync(wasm)) await promisify(execFile)('stellar', ['contract', 'build'], { cwd: ROOT });
   const { stdout } = await promisify(execFile)('stellar', [
     'contract', 'deploy', '--wasm', wasm, '--source-account', cfg.admin.secret, '--network', 'testnet',
     '--', '--token', cfg.usdcContract,
@@ -134,7 +135,7 @@ async function walletBuild(action, body) {
     }
     case 'contribute': {
       const tx = await prepareInvoke(cfg, walletPub, 'contribute', addr(walletPub));
-      return { xdr: tx.toXDR(), kind: 'soroban', label: `Vous versez ${CONTRIBUTION} USDC dans la tontine` };
+      return { xdr: tx.toXDR(), kind: 'soroban', label: `Vous versez ${CONTRIBUTION} USDC dans le cercle` };
     }
     case 'receive': {
       const usdc = Number(body.amount);

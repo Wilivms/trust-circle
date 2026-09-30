@@ -10,7 +10,7 @@ struct Setup<'a> {
     env: Env,
     usdc: TokenClient<'a>,
     members: Vec<Address>,
-    client: TontineClient<'a>,
+    client: TrustCircleClient<'a>,
 }
 
 fn setup() -> Setup<'static> {
@@ -34,8 +34,8 @@ fn setup() -> Setup<'static> {
         minter.mint(&m, &(AMOUNT * 10));
     }
 
-    let id = env.register(Tontine, (sac.address(), members.clone(), AMOUNT));
-    let client = TontineClient::new(&env, &id);
+    let id = env.register(TrustCircle, (sac.address(), members.clone(), AMOUNT));
+    let client = TrustCircleClient::new(&env, &id);
     Setup { env, usdc, members, client }
 }
 
@@ -113,5 +113,5 @@ fn rejects_duplicate_members() {
     let issuer = Address::generate(&env);
     let sac = env.register_stellar_asset_contract_v2(issuer);
     let a = Address::generate(&env);
-    env.register(Tontine, (sac.address(), vec![&env, a.clone(), a], AMOUNT));
+    env.register(TrustCircle, (sac.address(), vec![&env, a.clone(), a], AMOUNT));
 }
