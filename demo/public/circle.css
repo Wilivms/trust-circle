@@ -42,7 +42,7 @@ canvas#gl{position:fixed;left:var(--inset);top:var(--inset);width:calc(100% - 2*
 .pill{justify-self:end;display:inline-flex;align-items:center;gap:8px;background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:999px;padding:7px 13px;font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 4px 14px rgba(14,21,48,.06)}
 .live{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(15,157,88,.15)}
 
-.ruler{position:relative;width:min(380px,40vw);height:40px}
+.ruler{position:relative;width:min(500px,44vw);height:40px}
 .ticks{position:absolute;left:0;right:0;top:0;height:12px;
   background:repeating-linear-gradient(90deg,rgba(14,21,48,.28) 0 1px,transparent 1px 8px);
   -webkit-mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}

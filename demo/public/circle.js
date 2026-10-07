@@ -145,8 +145,8 @@ for (let c=0;c<COLS;c++) { const col=document.createElement('span'); col.classNa
   for (let d=0;d<=10;d++) { const s=document.createElement('span'); s.textContent=d%10; st.appendChild(s); }
   col.appendChild(st); $('odo').appendChild(col); strips.push({ col, st }); }
 function setOdo(v){
-  for (let c=0;c<COLS;c++) { const p=10**(COLS-1-c), raw=v/p; let d=raw%10;
-    if (c<COLS-1) { const lower=(v%p)/p; d=Math.floor(raw)%10+Math.max(0,(lower-.9)/.1); }
+  for (let c=0;c<COLS;c++) { const p=10**(COLS-1-c), raw=v/p, frac=raw%1;
+    const d=Math.floor(raw)%10 + (c===COLS-1 ? ss(.55,1,frac) : Math.max(0,(((v%p)/p)-.92)/.08));
     strips[c].st.style.transform=`translateY(${-d}em)`;
     strips[c].col.classList.toggle('lead', v<p && c<COLS-1); }
 }
@@ -212,7 +212,8 @@ const flash=$('flash');
 let ringClose=0, closeT0=0;
 function closeCircle(){
   if (closing) return; closing=true; closeT0=performance.now();
-  if (pts.length<2) { const cx=innerWidth/2, cy=innerHeight/2, r=Math.min(innerWidth,innerHeight)*.22; pts=[];
+  if (pts.length<2) { v3.set(STAGE.cx,STAGE.cy,0).project(sCam); const cx=VX+(v3.x*.5+.5)*VW, cy=VY+(-v3.y*.5+.5)*VH;
+    v3.set(STAGE.cx+2.6,STAGE.cy,0).project(sCam); const r=Math.abs(VX+(v3.x*.5+.5)*VW-cx)+14; pts=[];
     for (let i=0;i<=64;i++) { const a=i/64*PI*2-PI/2; pts.push([cx+Math.cos(a)*r, cy+Math.sin(a)*r]); } }
   paintPath();
   flash.animate([{opacity:0},{opacity:1,offset:.55},{opacity:0}],{ duration:1500, delay:900, easing:'ease-in-out' });
@@ -223,12 +224,12 @@ function closeCircle(){
 const polar=(r,a,y=0) => new THREE.Vector3(Math.cos(a)*r,y,-Math.sin(a)*r);
 const lam=(c,o={}) => new THREE.MeshLambertMaterial(Object.assign({ color:c },o));
 let city=null, cCam=null, cityT0=0, cityPackets=[], pulseT=-1, pulseIdx=0;
-const orbit={ theta:0, el:.7, dist:70, tTheta:null };
+const orbit={ theta:0, el:.74, dist:80, tTheta:null };
 
 function buildCity(){
   const S=new THREE.Scene(); S.fog=new THREE.Fog(0xf1f5fa,90,200);
-  S.add(new THREE.HemisphereLight(0xffffff,0xd9dde6,.78));
-  const sun=new THREE.DirectionalLight(0xfff6e8,.72); sun.position.set(-30,55,30); sun.castShadow=true;
+  S.add(new THREE.HemisphereLight(0xf4f7ff,0xcfd5e0,.6));
+  const sun=new THREE.DirectionalLight(0xfff3e2,.86); sun.position.set(-30,55,30); sun.castShadow=true;
   sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera,{ left:-36, right:36, top:36, bottom:-36, near:1, far:160 });
   sun.shadow.bias=-.0006; sun.shadow.radius=6; S.add(sun);
   const shadowy=(m) => { m.castShadow=true; m.receiveShadow=true; return m; };
@@ -237,7 +238,7 @@ function buildCity(){
   const water=add(new THREE.Mesh(new THREE.CircleGeometry(220,72),lam(0xd6e9f4))); water.rotation.x=-PI/2; water.position.y=-.7;
   const foam=add(new THREE.Mesh(new THREE.RingGeometry(29.2,30.4,96),lam(0xffffff,{ transparent:true, opacity:.9 }))); foam.rotation.x=-PI/2; foam.position.y=-.66;
   const island=add(new THREE.Mesh(new THREE.CylinderGeometry(29,29.6,1.4,96),lam(0xe9e6df))); island.position.y=-.7; island.receiveShadow=true;
-  const grass=add(new THREE.Mesh(new THREE.CircleGeometry(28.4,96),lam(0xf8f7f4))); grass.rotation.x=-PI/2; grass.position.y=.005; grass.receiveShadow=true;
+  const grass=add(new THREE.Mesh(new THREE.CircleGeometry(28.4,96),lam(0xf1efe9))); grass.rotation.x=-PI/2; grass.position.y=.005; grass.receiveShadow=true;
 
   // instanced props
   const pools={};
@@ -602,14 +603,14 @@ function enterCity(){
   if (!city) { city=buildCity(); cCam=new THREE.PerspectiveCamera(40,VW/VH,.1,400); buildLabels(); orbit.theta=city.districts[0].a; }
   mode='city'; cityT0=performance.now(); gateOpen=false; closing=false; pts=[]; paintPath();
   gate.hidden=true; $('cityUI').hidden=false;
-  ['story','orbLabels','feeTags','odoWrap','rail','hint','skip'].forEach((id) => { $(id).hidden=true; });
+  ['story','orbLabels','feeTags','odoWrap','hint','skip'].forEach((id) => { $(id).hidden=true; }); ruler.style.visibility='hidden';
   $('replay').hidden=false;
   resize(); renderPanel();
   if (!state) refresh();
 }
 function backToStory(){
   mode='story'; target=prog=0; ringClose=0;
-  $('cityUI').hidden=true; ['story','orbLabels','feeTags','odoWrap','rail','hint','skip'].forEach((id) => { $(id).hidden=false; });
+  $('cityUI').hidden=true; ['story','orbLabels','feeTags','odoWrap','hint','skip'].forEach((id) => { $(id).hidden=false; }); ruler.style.visibility='';
   $('replay').hidden=true;
 }
 $('skip').addEventListener('click',() => { flash.animate([{opacity:0},{opacity:.9},{opacity:0}],{ duration:900 }); setTimeout(enterCity,420); });
@@ -654,9 +655,10 @@ function storyFrame(now,t){
     el.style.opacity=o.toFixed(3);
     el.style.transform = narrow ? `translateY(${((1-o)*20).toFixed(1)}px)` : `translateY(calc(-50% + ${(-d*60).toFixed(1)}px))`;
     el.style.visibility=o<.01?'hidden':'visible'; });
+  const veil=1-bgU.uDim.value; chaps[5].style.opacity=(+chaps[5].style.opacity*veil).toFixed(3); $('odoWrap').style.opacity=veil.toFixed(3);
   const ci=Math.min(5,Math.floor(p*6+.0001)); railItems.forEach((li,i) => li.classList.toggle('on',i===ci));
   needle.style.transform=`translateX(${(p*ruler.clientWidth-1).toFixed(1)}px)`;
-  hint.style.opacity=(.75*(1-ss(.01,.06,p))).toFixed(3);
+  hint.style.opacity=(.75*(1-ss(.01,.06,p))).toFixed(3); hint.style.display = p>.06 ? 'none' : '';
 
   const mix1=ss(.36,.47,p), mix2=ss(.9,.985,p), six=ss(.84,.9,p);
   const warm=ss(.66,.72,p)*(1-ss(.8,.86,p)), gold=ss(.84,.93,p);
