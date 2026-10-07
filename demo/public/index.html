@@ -75,8 +75,8 @@
 
   <nav class="dock" aria-label="Navigation">
     <span class="dock-hint" id="hint"><i></i>Scroll</span>
-    <button class="dock-btn" id="skip" type="button">Skip to demo<span aria-hidden="true">→</span></button>
-    <button class="dock-btn" id="replay" type="button" hidden><span aria-hidden="true">←</span>Replay the story</button>
+    <button class="dock-btn" id="skip" type="button" data-magnetic>Skip to demo<span aria-hidden="true">→</span></button>
+    <button class="dock-btn" id="replay" type="button" data-magnetic hidden><span aria-hidden="true">←</span>Replay the story</button>
   </nav>
 
   <div id="gate" hidden>
@@ -93,6 +93,15 @@
   </div>
 
   <div id="flash"></div>
+  <div id="iris" aria-hidden="true"></div>
+
+  <div id="loader" aria-hidden="true">
+    <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="lt"/><circle cx="60" cy="60" r="52" class="lp" id="loaderRing"/></svg>
+    <div class="lnum"><span id="loaderNum">0</span><small>%</small></div>
+    <p>Gathering the family…</p>
+  </div>
+
+  <div id="cursor" aria-hidden="true"><i></i></div>
 
   <div id="cityUI" hidden>
     <div id="labels"></div>

@@ -48,7 +48,8 @@ canvas#gl{position:fixed;left:var(--inset);top:var(--inset);width:calc(100% - 2*
   -webkit-mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
 .needle{position:absolute;top:-3px;left:0;width:2px;height:18px;border-radius:2px;background:var(--ink);transform:translateX(-1px);transition:none}
 .ruler ol{position:absolute;left:0;right:0;top:20px;margin:0;padding:0;list-style:none;display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
-.ruler li{transition:color .3s;width:0;display:flex;justify-content:center;white-space:nowrap}
+.ruler li{transition:color .3s;width:0;display:flex;justify-content:center;white-space:nowrap;pointer-events:auto;cursor:pointer}
+.ruler li:hover{color:var(--ink)}
 .ruler li:first-child{justify-content:flex-start}
 .ruler li:last-child{justify-content:flex-end}
 .ruler li.on{color:var(--ink)}
@@ -181,3 +182,36 @@ button.pill-s:disabled{opacity:.35;cursor:default}
   .dlab small{display:none}
 }
 @media (prefers-reduced-motion:reduce){.dock-hint i::after,.spinner{animation:none}}
+
+/* --- preloader: the circle fills while the family gathers --- */
+#loader{position:fixed;inset:0;z-index:60;display:grid;place-items:center;align-content:center;gap:18px;background:var(--page);transition:opacity .6s ease,visibility .6s}
+#loader.done{opacity:0;visibility:hidden}
+#loader svg{width:120px;height:120px;transform:rotate(-90deg)}
+#loader circle{fill:none;stroke-width:3}
+#loader .lt{stroke:rgba(14,21,48,.1)}
+#loader .lp{stroke:var(--ink);stroke-linecap:round;stroke-dasharray:326.7;stroke-dashoffset:326.7}
+#loader .lnum{position:absolute;font-family:var(--f-display);font-weight:600;font-size:26px;letter-spacing:-.04em;font-variant-numeric:tabular-nums;display:flex;align-items:baseline}
+#loader .lnum small{font-size:12px;margin-left:2px;color:var(--dim)}
+#loader p{position:absolute;top:calc(50% + 84px);margin:0;font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+
+/* --- iris transition into the island --- */
+#iris{position:fixed;inset:0;z-index:41;background:#fff;pointer-events:none;clip-path:circle(0% at 50% 50%)}
+
+/* --- custom cursor (fine pointers only) --- */
+#cursor{position:fixed;left:0;top:0;z-index:70;pointer-events:none;width:34px;height:34px;margin:-17px 0 0 -17px;border:1.5px solid #fff;border-radius:50%;mix-blend-mode:difference;transition:width .25s,height .25s,margin .25s,opacity .25s;opacity:0}
+#cursor i{position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;background:#fff}
+#cursor.on{opacity:1}
+#cursor.hover{width:58px;height:58px;margin:-29px 0 0 -29px}
+#cursor.pen{width:14px;height:14px;margin:-7px 0 0 -7px}
+@media (pointer:fine){ body.has-cursor, body.has-cursor button, body.has-cursor a, body.has-cursor .ruler li, body.has-cursor #gate{cursor:none} }
+@media (pointer:coarse){ #cursor{display:none} }
+
+/* --- headings reveal word by word --- */
+.chap .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.08em;margin-bottom:-.08em}
+.chap .w > span{display:inline-block;transform:translateY(105%);transition:transform .8s cubic-bezier(.2,.8,.1,1)}
+.chap.in .w > span{transform:none}
+.chap .lede,.chap .tags,.chap .eyebrow{transition:opacity .7s ease .15s,transform .7s cubic-bezier(.2,.8,.1,1) .15s}
+.chap:not(.in) .lede,.chap:not(.in) .tags{opacity:0;transform:translateY(10px)}
+
+@media (prefers-reduced-motion:reduce){ .chap .w > span{transition:none;transform:none} #cursor{display:none} }
+.dock-btn,.cta{transition:translate .35s cubic-bezier(.2,.8,.2,1),transform .12s,filter .2s}
