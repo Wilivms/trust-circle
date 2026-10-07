@@ -108,19 +108,16 @@ for (let i=0;i<DN;i++) { dpos[i*3]=(Math.random()-.5)*26; dpos[i*3+1]=(Math.rand
 const dgeo=new THREE.BufferGeometry(); dgeo.setAttribute('position',new THREE.BufferAttribute(dpos,3)); dgeo.setAttribute('color',new THREE.BufferAttribute(dcol,3));
 story.add(new THREE.Points(dgeo,new THREE.PointsMaterial({ size:.11, map:DISC, vertexColors:true, transparent:true, opacity:.45, depthWrite:false })));
 
-const RP=160, rpos=new Float32Array((RP+1)*3);
-for (let i=0;i<=RP;i++) { const a=i/RP*PI*2+PI/2; rpos[i*3]=Math.cos(a); rpos[i*3+1]=Math.sin(a); }
-const rgeo=new THREE.BufferGeometry(); rgeo.setAttribute('position',new THREE.BufferAttribute(rpos,3));
-const ring=new THREE.Line(rgeo,new THREE.LineBasicMaterial({ color:0x16203f, transparent:true, opacity:.5 }));
-story.add(ring);
-
+// Story lines are thick ribbons (WebGL ignores lineWidth), in colours that read on the bright sky.
+const ribbonGeo=new THREE.PlaneGeometry(1,1);
+function ribbon(color, order=1){ const m=new THREE.Mesh(ribbonGeo,new THREE.MeshBasicMaterial({ color, transparent:true, opacity:0, depthWrite:false }));
+  m.renderOrder=order; story.add(m); return m; }
+function setRibbon(m,a,b,w){ const dx=b.x-a.x, dy=b.y-a.y; m.position.set((a.x+b.x)/2,(a.y+b.y)/2,0); m.rotation.z=Math.atan2(dy,dx); m.scale.set(Math.hypot(dx,dy),w,1); }
+const ring=new THREE.Mesh(new THREE.TorusGeometry(1,.028,10,160),new THREE.MeshBasicMaterial({ color:0xff7a3d, transparent:true, opacity:.5, depthWrite:false }));
+ring.renderOrder=1; story.add(ring);
 const pairs=[]; for (let i=0;i<5;i++) for (let j=i+1;j<5;j++) pairs.push([i,j]);
-const fgeo=new THREE.BufferGeometry(); fgeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(pairs.length*6),3));
-const fric=new THREE.LineSegments(fgeo,new THREE.LineBasicMaterial({ color:0xff5a5f, transparent:true, opacity:0 }));
-story.add(fric);
-const hgeo=new THREE.BufferGeometry(); hgeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(36),3));
-const hubL=new THREE.LineSegments(hgeo,new THREE.LineBasicMaterial({ color:0x16203f, transparent:true, opacity:0 }));
-story.add(hubL);
+const fric=pairs.map(() => ribbon(0xe8243a));
+const hubL=[0,1,2,3,4,5].map(() => ribbon(0xff9f1c));
 
 const PN=30, ppos=new Float32Array(PN*3);
 const pgeo=new THREE.BufferGeometry(); pgeo.setAttribute('position',new THREE.BufferAttribute(ppos,3));
@@ -662,15 +659,13 @@ function storyFrame(now,t){
     o.scale.setScalar((1.15+Math.sin(t*2+i)*.06)*(i===5?(.4+.6*six):1)); });
   hub.position.set(C.x,C.y,0); hub.material.opacity=Math.min(1,gold+ringClose); hub.scale.setScalar(1.6+Math.sin(t*3)*.08+ringClose*.8);
   ring.position.set(C.x,C.y,0); ring.scale.setScalar(lerp(R5,R6,mix2));
-  ring.material.opacity=Math.max((1-mix1)*.4,mix2*.7);
-  if (closing) { ringClose=Math.min(1,(now-closeT0)/900); ring.material.opacity=.7+ringClose*.3; }
+  ring.material.opacity=Math.max((1-mix1)*.85,mix2*.95);
+  if (closing) { ringClose=Math.min(1,(now-closeT0)/900); ring.material.opacity=1; }
 
-  const fa=fgeo.attributes.position.array;
-  pairs.forEach(([a,b],k) => fa.set([pos[a].x,pos[a].y,0,pos[b].x,pos[b].y,0],k*6)); fgeo.attributes.position.needsUpdate=true;
-  fric.material.opacity=warm*(.45+.25*Math.sin(t*9)*Math.sin(t*3.1));
-  const ha=hgeo.attributes.position.array;
-  pos.forEach((q,i) => ha.set([q.x,q.y,0,C.x,C.y,0],i*6)); hgeo.attributes.position.needsUpdate=true;
-  hubL.material.opacity=ss(.85,.9,p)*(1-mix2)*.35;
+  const fo=warm*(.6+.3*Math.sin(t*9)*Math.sin(t*3.1));
+  pairs.forEach(([a,b],k) => { setRibbon(fric[k],pos[a],pos[b],.035); fric[k].material.opacity=fo; });
+  const ho=ss(.85,.9,p)*(1-mix2)*.85;
+  pos.forEach((q,i) => { setRibbon(hubL[i],q,C,.045); hubL[i].material.opacity=ho; });
 
   let pm=0;
   for (let j=0;j<PN;j++) { let x=0,y=0;
