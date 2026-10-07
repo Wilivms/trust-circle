@@ -6,29 +6,36 @@
   <title>Trust Circle</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
   <link rel="stylesheet" href="/circle.css">
 </head>
 <body>
+  <!-- the whole experience sits in one rounded glass window -->
   <canvas id="gl" aria-hidden="true"></canvas>
+  <div class="frame" aria-hidden="true"></div>
 
   <header class="top">
     <div class="brand">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="#ff5a5f" stroke-width="2" stroke-dasharray="44 9.4" stroke-linecap="round" transform="rotate(-70 12 12)"/><circle cx="12" cy="3.5" r="2" fill="#ffc53d"/></svg>
-      TRUST CIRCLE
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2.2" stroke-dasharray="44 9.4" stroke-linecap="round" transform="rotate(-70 12 12)"/><circle cx="12" cy="3.5" r="2.3" fill="#ffd23f"/></svg>
+      <span>Trust Circle</span>
     </div>
-    <div class="top-r">
-      <span class="net">STELLAR TESTNET</span>
-      <button class="ghost" id="skip">Skip to demo</button>
-      <button class="ghost" id="replay" hidden>Replay the story</button>
+
+    <div class="ruler" id="rail" aria-hidden="true">
+      <div class="ticks"></div>
+      <i class="needle" id="needle"></i>
+      <ol>
+        <li>Intro</li><li>Circle</li><li>Scattering</li><li>Currencies</li><li>Friction</li><li>Stellar</li>
+      </ol>
     </div>
+
+    <span class="pill net"><i class="live"></i>Stellar testnet</span>
   </header>
 
   <div id="story">
     <section class="chap" data-i="0">
       <p class="eyebrow">HackMeridian · Stellar</p>
       <h1>Trust<br><em>Circle</em></h1>
-      <p class="lede" style="margin-top:22px">The family savings circle, across continents.</p>
+      <p class="lede">The family savings circle, across continents.</p>
     </section>
     <section class="chap" data-i="1">
       <p class="eyebrow">01 · The circle</p>
@@ -54,38 +61,42 @@
       <p class="eyebrow">05 · The answer</p>
       <h2>Trust Circle closes the loop on Stellar.</h2>
       <p class="lede">Everyone pays the same value, 100 USDC, converted from their own currency by a Stellar path payment. A Soroban contract holds the pot and pays one member each month, in their own currency.</p>
-      <span class="tag"><b>~5 s</b> to settle</span><span class="tag"><b>100 USDC</b> each, every month</span>
+      <div class="tags"><span class="tag"><b>~5 s</b> to settle</span><span class="tag"><b>100 USDC</b> each, every month</span></div>
     </section>
   </div>
 
   <div id="orbLabels"></div>
+  <div id="feeTags"></div>
 
   <div class="odo" id="odoWrap">
     <div class="odo-digits" id="odo" aria-hidden="true"></div>
-    <div class="odo-cap">AVERAGE KM BETWEEN THEM</div>
+    <div class="odo-cap">km on average between them</div>
   </div>
 
-  <ol class="rail" id="rail">
-    <li>Intro</li><li>Circle</li><li>Scattering</li><li>Currencies</li><li>Friction</li><li>Stellar</li>
-  </ol>
-
-  <div class="hint" id="hint">SCROLL<i></i></div>
+  <nav class="dock" aria-label="Navigation">
+    <span class="dock-hint" id="hint"><i></i>Scroll</span>
+    <button class="dock-btn" id="skip" type="button">Skip to demo<span aria-hidden="true">→</span></button>
+    <button class="dock-btn" id="replay" type="button" hidden><span aria-hidden="true">←</span>Replay the story</button>
+  </nav>
 
   <div id="gate" hidden>
     <canvas id="draw"></canvas>
     <div class="gate-cue">
-      <strong>DRAW A CIRCLE</strong>
+      <strong>Draw a circle</strong>
       <span>to bring the family back together</span>
       <span class="miss" id="miss"></span>
     </div>
-    <button class="ghost" id="gateSkip">Close the circle for me</button>
+    <button class="hold" id="gateSkip" type="button" aria-label="Hold to close the circle">
+      <svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19" class="track"/><circle cx="22" cy="22" r="19" class="prog" id="holdProg"/></svg>
+      <span>or hold to close it</span>
+    </button>
   </div>
 
   <div id="flash"></div>
 
   <div id="cityUI" hidden>
     <div id="labels"></div>
-    <div id="cityTop">DRAG TO ROTATE · SCROLL TO ZOOM<br>CONTRIBUTION <b>100 USDC</b> / MONTH / MEMBER</div>
+    <div id="cityTop">Drag to rotate · Scroll to zoom</div>
     <aside class="panel" aria-live="polite">
       <div class="panel-head">
         <div class="meta" id="pMeta">Month –</div>
