@@ -28,12 +28,12 @@ export const CONTRIBUTION = '100';
  * L'ordre du tableau = l'ordre de rotation de la cagnotte.
  */
 export const FAMILY = [
-  { name: 'Vous', city: 'Nova Lumen',   country: 'Stellaria', continent: 'Pays imaginaire', code: 'XLM',  currency: 'lumen', symbol: 'XLM', rate: 3.5, native: true },
+  { name: 'You',  city: 'Nova Lumen',   country: 'Stellaria', continent: 'Imaginary country', code: 'XLM',  currency: 'lumen', symbol: 'XLM', rate: 3.5, native: true },
   { name: 'Léa',  city: 'Paris',        country: 'France',    continent: 'Europe',          code: 'EURC', currency: 'euro',             symbol: '€',  rate: 0.86 },
-  { name: 'Hugo', city: 'Tokyo',        country: 'Japon',     continent: 'Asie',            code: 'GYEN', currency: 'yen',              symbol: '¥',  rate: 148 },
-  { name: 'Inès', city: 'Sydney',       country: 'Australie', continent: 'Océanie',         code: 'AUDD', currency: 'dollar australien', symbol: 'A$', rate: 1.52 },
-  { name: 'Noah', city: 'Lagos',        country: 'Nigeria',   continent: 'Afrique',         code: 'NGNC', currency: 'naira',            symbol: '₦',  rate: 1530 },
-  { name: 'Emma', city: 'Buenos Aires', country: 'Argentine', continent: 'Amérique du Sud', code: 'ARST', currency: 'peso argentin',    symbol: '$',  rate: 1380 },
+  { name: 'Hugo', city: 'Tokyo',        country: 'Japan',     continent: 'Asia',            code: 'GYEN', currency: 'yen',              symbol: '¥',  rate: 148 },
+  { name: 'Inès', city: 'Sydney',       country: 'Australia', continent: 'Oceania',         code: 'AUDD', currency: 'Australian dollar', symbol: 'A$', rate: 1.52 },
+  { name: 'Noah', city: 'Lagos',        country: 'Nigeria',   continent: 'Africa',         code: 'NGNC', currency: 'naira',            symbol: '₦',  rate: 1530 },
+  { name: 'Emma', city: 'Buenos Aires', country: 'Argentina', continent: 'South America', code: 'ARST', currency: 'Argentine peso',    symbol: '$',  rate: 1380 },
 ];
 
 export function loadConfig() {
@@ -69,7 +69,7 @@ export async function submitSignedClassic(txOrXdr) {
     return res.hash;
   } catch (e) {
     const codes = e?.response?.data?.extras?.result_codes;
-    throw new Error(`Transaction refusée : ${JSON.stringify(codes ?? e.message)}`);
+    throw new Error(`Transaction rejected: ${JSON.stringify(codes ?? e.message)}`);
   }
 }
 
@@ -81,10 +81,10 @@ export async function submitClassic(signer, ops) {
 }
 
 const CONTRACT_ERRORS = {
-  1: "ce compte n'est pas membre du cercle",
-  2: 'ce membre a déjà cotisé ce mois-ci',
-  3: "tout le monde n'a pas encore cotisé",
-  4: 'le cercle est terminé',
+  1: 'this account is not a member of the circle',
+  2: 'this member has already paid this month',
+  3: 'not everyone has paid yet',
+  4: 'the circle is complete',
 };
 function explain(msg) {
   const m = /Error\(Contract, #(\d+)\)/.exec(msg);
@@ -117,14 +117,14 @@ export async function invoke(cfg, signer, method, ...args) {
 export async function sendSoroban(txOrXdr) {
   const tx = typeof txOrXdr === 'string' ? TransactionBuilder.fromXDR(txOrXdr, PASSPHRASE) : txOrXdr;
   const sent = await soroban.sendTransaction(tx);
-  if (sent.status === 'ERROR') throw new Error(`Envoi refusé : ${sent.errorResult?.result().switch().name ?? 'erreur'}`);
+  if (sent.status === 'ERROR') throw new Error(`Submission rejected: ${sent.errorResult?.result().switch().name ?? 'error'}`);
   for (let i = 0; i < 30; i++) {
     await sleep(1000);
     const r = await soroban.getTransaction(sent.hash);
     if (r.status === 'SUCCESS') return { hash: sent.hash, value: r.returnValue ? scValToNative(r.returnValue) : null };
-    if (r.status === 'FAILED') throw new Error(`Transaction ${sent.hash} échouée`);
+    if (r.status === 'FAILED') throw new Error(`Transaction ${sent.hash} failed`);
   }
-  throw new Error(`Transaction ${sent.hash} : pas de confirmation après 30 s`);
+  throw new Error(`Transaction ${sent.hash}: no confirmation after 30 s`);
 }
 
 /** Lecture seule : simule l'appel sans rien envoyer. */
@@ -163,7 +163,7 @@ export async function quoteFromUsdc(cfg, i, usdc) {
 /** Opération : convertir la devise locale du membre i en exactement `usdc` USDC (path payment vers soi). */
 export async function toUsdcOp(cfg, i, usdc = CONTRIBUTION) {
   const q = await quoteToUsdc(cfg, i, usdc);
-  if (!q) throw new Error(`Pas de liquidité ${FAMILY[i].code} → USDC`);
+  if (!q) throw new Error(`No ${FAMILY[i].code} → USDC liquidity`);
   const me = cfg.members[i].public;
   const op = Operation.pathPaymentStrictReceive({
     sendAsset: localOf(cfg, i), sendMax: amt(q.amount * 1.01),
@@ -175,7 +175,7 @@ export async function toUsdcOp(cfg, i, usdc = CONTRIBUTION) {
 /** Opération : convertir `usdc` USDC du membre i dans sa devise locale. */
 export async function fromUsdcOp(cfg, i, usdc) {
   const q = await quoteFromUsdc(cfg, i, usdc);
-  if (!q) throw new Error(`Pas de liquidité USDC → ${FAMILY[i].code}`);
+  if (!q) throw new Error(`No USDC → ${FAMILY[i].code} liquidity`);
   const me = cfg.members[i].public;
   const op = Operation.pathPaymentStrictSend({
     sendAsset: usdcOf(cfg), sendAmount: amt(usdc),

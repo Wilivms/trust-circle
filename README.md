@@ -45,9 +45,13 @@ npm run setup              # ~2 min: accounts, demo stablecoins, FX market, cont
 npm start                  # → http://localhost:3000
 ```
 
+The page opens on a short scroll-driven story (the problem, then Stellar). Draw a circle, or press **Skip to demo**, to reach the island: each district is a member's country, and the panel on the left drives the circle on testnet. The previous card-based page is still available at `/classic.html`.
+
+Opened without the demo server (for example as a static file), the page falls back to a local simulation with the same FX rates, so the story and the island can be shown anywhere.
+
 The wallet used as "You" is set in `demo/lib.mjs`. To use another one: `WALLET=G... npm run setup`.
 
-To replay the demo from month 1 (same accounts, fresh contract), click **Recommencer au mois 1** at the bottom of the page, or run `npm run reset`.
+To replay the demo from month 1 (same accounts, fresh contract), click **Restart at month 1** at the bottom of the panel, or run `npm run reset`.
 
 ### What `npm run setup` does on testnet
 
@@ -60,10 +64,11 @@ Testnet secret keys are written to `demo/config.json`, which is git-ignored.
 
 ## Demo script (about 1 minute)
 
-0. Before going on stage: **Connecter Freighter**, then **Activer mon wallet** (one signature: USDC trustline), then **Les autres cotisent** so the five other members have already paid.
-1. Point at the cards: every contribution looks different (351 XLM, 86 EURC, 14,844 GYEN…) but each one is worth exactly 100 USDC.
-2. Click **Cotiser en XLM** on your card. Freighter opens twice: XLM → USDC conversion, then the payment into the contract.
-3. Click **Verser la cagnotte**. The contract sends you 600 USDC, and Freighter opens once more to convert them back into XLM.
+0. Before going on stage: **Skip to demo**, **Connect Freighter**, then **Activate my wallet** (one signature: USDC trustline), then **The others pay** so the five other members have already paid (their coins fly to the plaza).
+1. Scroll back to the start with **Replay the story** and tell it in five beats, then draw the circle.
+2. On the island, point at the panel: every contribution looks different (351 XLM, 86 EURC, 14,844 GYEN…) but each one is worth exactly 100 USDC.
+3. Click **Pay in XLM · Freighter**. Freighter opens twice: XLM → USDC conversion, then the payment into the contract.
+4. Click **Pay out 600 USDC**. The contract sends you 600 USDC, and Freighter opens once more to convert them back into XLM.
 
 Every transaction in the log links to the Stellar testnet explorer.
 
@@ -74,7 +79,8 @@ Every transaction in the log links to the Stellar testnet explorer.
 - `demo/setup.mjs`: testnet setup
 - `demo/server.mjs`: demo server (signs for simulated members, prepares transactions for your wallet)
 - `demo/lib.mjs`: shared helpers, members and FX rates
-- `demo/public/`: front end
+- `demo/public/index.html`, `circle.js`, `circle.css`: front end (story, island, live panel), built with three.js
+- `demo/public/classic.html`, `app.js`, `style.css`: the previous card-based front end
 - `docs/trust_circle_pitch.pptx`: pitch deck
 
 ## Next steps

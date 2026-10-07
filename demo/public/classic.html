@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trust Circle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="sky" aria-hidden="true"></div>
+
+  <main>
+    <header>
+      <div class="topbar">
+        <p class="eyebrow">Démo · Stellar testnet</p>
+        <button id="btn-wallet" class="ghost small">Connecter Freighter</button>
+      </div>
+      <h1>Trust Circle</h1>
+      <p class="lede">Six frères et sœurs, six pays, six monnaies — dont un pays imaginaire qui paie en XLM, avec votre wallet Freighter.
+        Chacun verse la même valeur chaque mois ; un membre différent reçoit la cagnotte, dans sa devise.</p>
+    </header>
+
+    <section class="round" id="round">
+      <div>
+        <p class="label">Mois</p>
+        <p class="big"><span id="round-n">–</span><span class="muted"> / <span id="round-total">–</span></span></p>
+      </div>
+      <div>
+        <p class="label">Bénéficiaire</p>
+        <p class="big" id="beneficiary">–</p>
+      </div>
+      <div class="pot">
+        <p class="label">Cagnotte</p>
+        <p class="big"><span id="pot">0</span><span class="muted"> / <span id="pot-target">–</span> USDC</span></p>
+        <div class="bar"><div class="fill" id="pot-fill"></div></div>
+      </div>
+      <div class="actions">
+        <button id="btn-all" class="ghost">Les autres cotisent</button>
+        <button id="btn-payout">Verser la cagnotte</button>
+      </div>
+    </section>
+
+    <section class="members" id="members"></section>
+
+    <section class="log">
+      <h2>Journal des transactions</h2>
+      <ol id="log"><li class="muted">Aucune opération pour l’instant.</li></ol>
+    </section>
+
+    <footer>
+      <span>Contrat Soroban :</span>
+      <a id="contract-link" target="_blank" rel="noopener">–</a>
+      <span class="muted">· Taux de change de démo, fixés sur le DEX du testnet.</span>
+      <button id="btn-reset" class="ghost small reset">Recommencer au mois 1</button>
+    </footer>
+  </main>
+
+  <script src="/vendor/freighter-api.js"></script>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>
