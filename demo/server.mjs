@@ -17,7 +17,7 @@ import {
 const PORT = Number(process.env.PORT ?? 3000);
 const cfg = loadConfig();
 if (!cfg?.contractId) {
-  console.error('Pas de cercle déployé : lancez d’abord `npm run setup`.');
+  console.error('No circle deployed: run `npm run setup` first.');
   process.exit(1);
 }
 
@@ -64,16 +64,16 @@ async function state() {
 // ---------- Membres simulés (signés côté serveur) ----------
 
 async function contribute(i) {
-  if (isWallet(i)) throw new Error('Ce membre signe avec Freighter.');
+  if (isWallet(i)) throw new Error('This member signs with Freighter.');
   const f = FAMILY[i];
   const steps = [];
   const bal = await balances(cfg, cfg.members[i].public);
   if ((bal.USDC ?? 0) < Number(CONTRIBUTION)) {
     const conv = await convertToUsdc(cfg, i);
-    steps.push({ label: `${f.name} convertit ${conv.spent.toFixed(2)} ${f.code} en ${CONTRIBUTION} USDC`, hash: conv.hash });
+    steps.push({ label: `${f.name} converts ${conv.spent.toFixed(2)} ${f.code} into ${CONTRIBUTION} USDC`, hash: conv.hash });
   }
   const call = await invoke(cfg, kp(cfg.members[i]), 'contribute', addr(cfg.members[i].public));
-  steps.push({ label: `${f.name} verse ${CONTRIBUTION} USDC dans le cercle`, hash: call.hash });
+  steps.push({ label: `${f.name} pays ${CONTRIBUTION} USDC into the circle`, hash: call.hash });
   return steps;
 }
 
@@ -94,10 +94,10 @@ async function payout() {
   const i = indexOf(call.value);
   const f = FAMILY[i];
   const pot = USDC(s.amount) * s.total_rounds;
-  const steps = [{ label: `Trust Circle verse ${pot} USDC à ${f.name} (${f.city})`, hash: call.hash }];
+  const steps = [{ label: `Trust Circle pays ${pot} USDC to ${f.name} (${f.city})`, hash: call.hash }];
   if (isWallet(i)) return { steps, walletConvert: pot };
   const conv = await convertFromUsdc(cfg, i, pot);
-  steps.push({ label: `${f.name} reçoit ${conv.received.toFixed(2)} ${f.code}`, hash: conv.hash });
+  steps.push({ label: `${f.name} receives ${conv.received.toFixed(2)} ${f.code}`, hash: conv.hash });
   return { steps };
 }
 
@@ -113,7 +113,7 @@ async function reset() {
   ], { cwd: ROOT });
   cfg.contractId = stdout.trim().split('\n').pop().trim();
   saveConfig(cfg);
-  return [{ label: 'Nouveau cercle déployé : retour au mois 1', hash: null }];
+  return [{ label: 'New circle deployed: back to month 1', hash: null }];
 }
 
 // ---------- Wallet Freighter : préparer → (signature navigateur) → soumettre ----------
@@ -126,26 +126,26 @@ async function walletBuild(action, body) {
     case 'activate': {
       const assets = [usdcOf(cfg), localOf(cfg, WALLET_INDEX)].filter((a) => !a.isNative());
       const tx = await buildClassic(walletPub, assets.map((asset) => Operation.changeTrust({ asset })));
-      return { xdr: tx.toXDR(), kind: 'classic', label: `Activation du wallet : ligne de confiance ${assets.map((a) => a.code).join(' + ')}` };
+      return { xdr: tx.toXDR(), kind: 'classic', label: `Wallet activation: trustline ${assets.map((a) => a.code).join(' + ')}` };
     }
     case 'convert': {
       const { op, spent } = await toUsdcOp(cfg, WALLET_INDEX);
       const tx = await buildClassic(walletPub, [op]);
-      return { xdr: tx.toXDR(), kind: 'classic', label: `Vous convertissez ${spent.toFixed(2)} ${W.code} en ${CONTRIBUTION} USDC` };
+      return { xdr: tx.toXDR(), kind: 'classic', label: `You convert ${spent.toFixed(2)} ${W.code} into ${CONTRIBUTION} USDC` };
     }
     case 'contribute': {
       const tx = await prepareInvoke(cfg, walletPub, 'contribute', addr(walletPub));
-      return { xdr: tx.toXDR(), kind: 'soroban', label: `Vous versez ${CONTRIBUTION} USDC dans le cercle` };
+      return { xdr: tx.toXDR(), kind: 'soroban', label: `You pay ${CONTRIBUTION} USDC into the circle` };
     }
     case 'receive': {
       const usdc = Number(body.amount);
-      if (!(usdc > 0)) throw new Error('Montant invalide');
+      if (!(usdc > 0)) throw new Error('Invalid amount');
       const { op, received } = await fromUsdcOp(cfg, WALLET_INDEX, usdc);
       const tx = await buildClassic(walletPub, [op]);
-      return { xdr: tx.toXDR(), kind: 'classic', label: `Vous convertissez ${usdc} USDC en ${received.toFixed(2)} ${W.code}` };
+      return { xdr: tx.toXDR(), kind: 'classic', label: `You convert ${usdc} USDC into ${received.toFixed(2)} ${W.code}` };
     }
     default:
-      throw new Error('Action inconnue');
+      throw new Error('Unknown action');
   }
 }
 
@@ -158,14 +158,17 @@ async function walletSubmit({ xdr, kind, label, action }) {
     const h = await submitClassic(kp(cfg.issuer), [
       Operation.payment({ destination: walletPub, asset: localOf(cfg, WALLET_INDEX), amount: cfg.walletFunding }),
     ]);
-    steps.push({ label: `Vous recevez ${Number(cfg.walletFunding).toLocaleString('fr-FR')} ${W.code} de démo`, hash: h });
+    steps.push({ label: `You receive ${Number(cfg.walletFunding).toLocaleString('en-US')} demo ${W.code}`, hash: h });
   }
   return { steps };
 }
 
 // ---------- HTTP ----------
 const PUBLIC = path.join(HERE, 'public');
-const VENDOR = { '/vendor/freighter-api.js': path.join(HERE, 'node_modules/@stellar/freighter-api/build/index.min.js') };
+const VENDOR = {
+  '/vendor/freighter-api.js': path.join(HERE, 'node_modules/@stellar/freighter-api/build/index.min.js'),
+  '/vendor/three.min.js': path.join(HERE, 'node_modules/three/build/three.min.js'),
+};
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml' };
 
 function send(res, code, body) {
@@ -190,23 +193,23 @@ http.createServer(async (req, res) => {
       const body = await readBody(req);
       if (url.pathname === '/api/wallet/build') return send(res, 200, await walletBuild(body.action, body));
       if (url.pathname === '/api/wallet/submit') return send(res, 200, await walletSubmit(body));
-      return send(res, 404, { error: 'Route inconnue' });
+      return send(res, 404, { error: 'Unknown route' });
     }
 
     if (req.method === 'POST' && url.pathname.startsWith('/api/')) {
-      if (busy) return send(res, 409, { error: 'Une opération est déjà en cours.' });
+      if (busy) return send(res, 409, { error: 'Another operation is already running.' });
       busy = true;
       try {
         const body = await readBody(req);
         if (url.pathname === '/api/contribute') {
           const i = Number(body.index);
-          if (!(i >= 0 && i < FAMILY.length)) return send(res, 400, { error: 'Membre inconnu' });
+          if (!(i >= 0 && i < FAMILY.length)) return send(res, 400, { error: 'Unknown member' });
           return send(res, 200, { steps: await contribute(i) });
         }
         if (url.pathname === '/api/contribute-all') return send(res, 200, { steps: await contributeAll() });
         if (url.pathname === '/api/payout') return send(res, 200, await payout());
         if (url.pathname === '/api/reset') return send(res, 200, { steps: await reset() });
-        return send(res, 404, { error: 'Route inconnue' });
+        return send(res, 404, { error: 'Unknown route' });
       } finally {
         busy = false;
       }
@@ -224,6 +227,6 @@ http.createServer(async (req, res) => {
   }
 }).listen(PORT, () => {
   console.log(`\nTrust Circle → http://localhost:${PORT}`);
-  console.log(`Wallet Freighter (membre ${W.name}) : ${walletPub}`);
-  console.log(`Contrat : https://stellar.expert/explorer/testnet/contract/${cfg.contractId}\n`);
+  console.log(`Freighter wallet (member ${W.name}): ${walletPub}`);
+  console.log(`Contract: https://stellar.expert/explorer/testnet/contract/${cfg.contractId}\n`);
 });
